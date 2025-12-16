@@ -1,17 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
 
-// 1. Mock do react-router-dom para evitar erros de navegação no ambiente de teste
-const mockedNavigate = jest.fn();
-
-jest.mock('react-router-dom', () => {
-  // Tentamos pegar a implementação real para não quebrar outros componentes
-  const actual = jest.requireActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockedNavigate,
-  };
-});
+// Mock simplificado: Define as funções do roteador manualmente 
+// para que o Jest não precise carregar a biblioteca real, evitando o erro de "module not found"
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => jest.fn(),
+  useLocation: () => ({ pathname: '/' }),
+  Link: ({ children }) => <div>{children}</div>,
+  BrowserRouter: ({ children }) => <div>{children}</div>
+}));
 
 describe('Regras de Negócio Internas', () => {
 
@@ -21,7 +17,7 @@ describe('Regras de Negócio Internas', () => {
         const localExistente = { lat: -8.0631, lng: -34.8711 }; 
         const novoLocal = { lat: -8.0632, lng: -34.8712 }; // Diferença mínima
 
-        // A lógica exata de proximidade
+        // A lógica de proximidade (delta de 0.001)
         const delta = 0.001;
         const isDuplicado = (
             novoLocal.lat >= localExistente.lat - delta &&
@@ -51,15 +47,15 @@ describe('Regras de Negócio Internas', () => {
 
     // Teste da matemática de conversão de pontos
     test('Deve calcular a conversão de Capibas corretamente', () => {
-        // Cenário em que o usuário tem 1250 pontos Visse
+        // Cenário: Usuário tem 1250 pontos Visse
         const saldoUsuario = 1250;
         const TAXA_CONVERSAO = 500; // 500 pts = 1 moeda
         
-        // Lógica do sistema
+        // Lógica de cálculo
         const moedasGeradas = Math.floor(saldoUsuario / TAXA_CONVERSAO);
         const sobraPontos = saldoUsuario % TAXA_CONVERSAO;
 
-        // Se tudo der certo ele ganha 2 moedas e sobram 250 pontos
+        // Esperado: 2 moedas e sobra de 250 pontos
         expect(moedasGeradas).toBe(2);
         expect(sobraPontos).toBe(250);
     });
