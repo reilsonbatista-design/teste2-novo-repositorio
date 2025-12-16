@@ -1,3 +1,18 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+
+// 1. Mock do react-router-dom para evitar erros de navegação no ambiente de teste
+const mockedNavigate = jest.fn();
+
+jest.mock('react-router-dom', () => {
+  // Tentamos pegar a implementação real para não quebrar outros componentes
+  const actual = jest.requireActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockedNavigate,
+  };
+});
+
 describe('Regras de Negócio Internas', () => {
 
     // Teste da lógica de duplicidade de local
@@ -6,7 +21,7 @@ describe('Regras de Negócio Internas', () => {
         const localExistente = { lat: -8.0631, lng: -34.8711 }; 
         const novoLocal = { lat: -8.0632, lng: -34.8712 }; // Diferença mínima
 
-        // A lógica exata que extraímos do seu LocalController.js
+        // A lógica exata de proximidade
         const delta = 0.001;
         const isDuplicado = (
             novoLocal.lat >= localExistente.lat - delta &&
@@ -36,7 +51,7 @@ describe('Regras de Negócio Internas', () => {
 
     // Teste da matemática de conversão de pontos
     test('Deve calcular a conversão de Capibas corretamente', () => {
-        // Cenário em que o suário tem 1250 pontos Visse
+        // Cenário em que o usuário tem 1250 pontos Visse
         const saldoUsuario = 1250;
         const TAXA_CONVERSAO = 500; // 500 pts = 1 moeda
         
